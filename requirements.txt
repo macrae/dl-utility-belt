@@ -1,0 +1,3 @@
+numpy==1.16.4
+sklearn
+torch==1.1.0.post2

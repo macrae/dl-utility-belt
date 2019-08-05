@@ -5,7 +5,7 @@ A Python 3.6 module of implementations in Pytorch and fastai containing the func
 implementations and main() applications for the configuration, training, and evaluation
 of different deep learning architectures for various tasks.
 
-## DrSeussify
+## Dr Seussify
 
 *Objective*: Auto-generate seuss-like text given a one-word seed.
 
