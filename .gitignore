@@ -122,3 +122,4 @@ prodigy/resources/
 *.swp
 jupyter/.ipynb_checkpoints
 artifacts/
+jupyter/data/
