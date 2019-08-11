@@ -1,15 +1,31 @@
 import argparse
+import sys
+
+from fastai.vision import ImageDataBunch, cnn_learner
 
 
-def run_job(args):
+def train_model(hyperparams):
+    """Train a resnet model...
+
+    Parameters
+    ----------
+    hyperparams : dict
+        dict of hyperparams
+
+    Returns
+    -------
+    [type]
+        trained pytorch model
+    """
 
     # init args
-    path = job_specs["path"]
-    train = job_specs["train"]
-    valid_pct = job_specs["valid_pct"]
-    size = job_specs["size"]
-    num_workers = job_specs["num_workers"]
+    path = hyperparams["path"]
+    train = hyperparams["train"]
+    valid_pct = hyperparams["valid_pct"]
+    size = hyperparams["size"]
+    num_workers = hyperparams["num_workers"]
 
+    # load data from folder
     data = ImageDataBunch.from_folder(
         path=path,
         train=train,
@@ -19,8 +35,10 @@ def run_job(args):
         num_workers=num_workers,
     ).normalize(imagenet_stats)
 
+    # init model
     learn = cnn_learner(data, models.resnet34, metrics=error_rate)
 
+    # train model
     learn.fit_one_cycle(4)
 
     return learn
@@ -34,6 +52,7 @@ def main(main_args):
     parser.add_argument("--valid_pct ", required=True, help="validation set percent")
     parser.add_argument("--size ", required=True, help="size of...")
     parser.add_argument("--num_workers ", required=True, help="number of workers...")
+    parser.add_argument("--save_to ", required=True, help="path to save...")
     parser.add_argument(
         "--overwrite",
         action="store_true",
@@ -42,21 +61,21 @@ def main(main_args):
         help="Default overwrite false",
     )
 
+    # unpack args
     args = parser.parse_args(main_args)
+    hyperparams = {i: args.__getattribute__(i) for i in args.__dir__() if i[0] != "_"}
 
-    job_specs = {i: args.__getattribute__(i) for i in args.__dir__() if i[0] != "_"}
+    # train learner
+    learn = train_model(hyperparams)
 
-    learn = run_job(job_specs)
-
-    learn.save("stage-1")
+    # save model artifacts
+    learn.save(args.save_to)
 
     if args.overwrite:
-        inner_join_df.write.mode("overwrite").save(args.target)
+        learn.save(args.save_to)  # overwrite
     else:
-        inner_join_df.write.save(args.target)
+        learn.save(args.save_to)  # do not overwrite
 
 
 if __name__ == "__main__":
-    import sys
-
     sys.exit(main(sys.argv))
